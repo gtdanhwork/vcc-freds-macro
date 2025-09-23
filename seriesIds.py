@@ -1,3 +1,5 @@
+# All indicators are noted with frequency updates
+
 FRED_SERIES_IDS = {
     's&p500': 'SP500',                # (Daily)             S&P 500 Index
     'fed_rate': 'FEDFUNDS',           # (Daily)             Federal Funds Rate

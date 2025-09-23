@@ -15,8 +15,6 @@ if st.button("Refresh Data"):
     data = get_fred_data(FRED_SERIES_ID['s&p500'])
     print(data)
 
-if st.button("test"):
-    print("Hello World")
 
     # signals, buy_count, sell_count = analyze_signals()
 
