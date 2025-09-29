@@ -48,7 +48,7 @@ def get_fred_data(series_id, limit=30, realtimeStart='2024-09-01'):
             # Get the two most recent values
             return data
     except Exception as e:
-        print(f"Could not fetch data for {series_id}: {e}")
+        print(f"Could not fetch data for {  series_id}: {e}")
         return None
 
 # --- SIGNAL ANALYSIS LOGIC ---
