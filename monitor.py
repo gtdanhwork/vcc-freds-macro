@@ -82,23 +82,6 @@ def analyze_signals(value: str = FRED_SERIES_IDS['s&p500']) -> list:
 # --- MAIN EXECUTION ---]
 
 def main():
-<<<<<<< HEAD
-    print("Running macro factor analysis...")
-    # signals, buy_count, sell_count = analyze_signals()
-    data = get_fred_data(FRED_SERIES_IDS['cpi'], 2)
-
-    print(data)
-    
-    # Format the message
-    message = "📈 *Macro Signal Report* 📉\n\n"
-    for factor, signal in signals.items():
-        emoji = "🟢" if signal == 'BUY' else "🔴"
-        message += f"{emoji} *{factor}:* {signal}\n"
-    
-    message += f"\n*Summary:*\n"
-    message += f"🟢 Buy Signals: *{buy_count}*\n"
-    message += f"🔴 Sell Signals: *{sell_count}*\n\n"
-=======
     analyze_signals();    
 
     # # Format the message
@@ -106,20 +89,23 @@ def main():
     # for factor, signal in signals.items():
     #     emoji = "🟢" if signal == 'BUY' else "🔴"
     #     message += f"{emoji} *{factor}:* {signal}\n"
->>>>>>> sontest
     
-    # --- TRIGGER LOGIC (e.g., 4 out of 5 for this example) ---
-    if buy_count >= 8:
-        message += "🚨 *MAJOR BUY SIGNAL DETECTED* 🚨"
-        send_telegram_message(message)
-    elif sell_count >= 8:
-        message += "🚨 *MAJOR SELL SIGNAL DETECTED* 🚨"
-        send_telegram_message(message)
-    else:
-        message += "Signal is neutral. No action required."
-        print(message)
-        # Optional: uncomment below to get a report even on neutral days
-        send_telegram_message(message)
+    # message += f"\n*Summary:*\n"
+    # message += f"🟢 Buy Signals: *{buy_count}*\n"
+    # message += f"🔴 Sell Signals: *{sell_count}*\n\n"
+    
+    # # --- TRIGGER LOGIC (e.g., 4 out of 5 for this example) ---
+    # if buy_count >= 4:
+    #     message += "🚨 *MAJOR BUY SIGNAL DETECTED* 🚨"
+    #     send_telegram_message(message)
+    # elif sell_count >= 4:
+    #     message += "🚨 *MAJOR SELL SIGNAL DETECTED* 🚨"
+    #     send_telegram_message(message)
+    # else:
+    #     message += "Signal is neutral. No action required."
+    #     print(message)
+    #     # Optional: uncomment below to get a report even on neutral days
+    #     send_telegram_message(message)
 
 if __name__ == "__main__":
     main()
