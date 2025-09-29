@@ -4,6 +4,7 @@ import pandas as pd
 import json
 from datetime import date
 from dotenv import load_dotenv
+from seriesIds import FRED_SERIES_IDS
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,9 +16,9 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 # FRED Series IDs for our indicators
 # Find more here: https://fred.stlouisfed.org/
-FRED_SERIES_IDS = {
-    'cpi': 'CPIAUCSL',                # Consumer Price Index
-}
+# FRED_SERIES_IDS = {
+#     'cpi': 'CPIAUCSL',                # Consumer Price Index
+# }
 
 # --- HELPER FUNCTIONS ---
 
@@ -37,51 +38,52 @@ def send_telegram_message(message):
         print(f"Error sending Telegram message: {e}")
         return None
 
-def get_fred_data(series_id, limit=30, realtimeStart='2025-08-01'):
+def get_fred_data(series_id, limit=30, realtimeStart='2024-09-01'):
     """Fetches the last few data points for a given series from FRED."""
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json&limit={limit}"
     try:
         response = requests.get(url)
         data = response.json()
-        if 'observations' in data and len(data['observations']) >= 29:
+        if 'observations' in data and len(data['observations']) >= limit:
             # Get the two most recent values
             return data
     except Exception as e:
         print(f"Could not fetch data for {series_id}: {e}")
-    return None, None
+        return None
 
 # --- SIGNAL ANALYSIS LOGIC ---
 
-def analyze_signals():
-    """Analyzes all macro factors and returns buy/sell counts."""
-    signals = {}
-    
-    # 1. Inflation (CPI)
-    latest_cpi, prev_cpi = get_fred_data(FRED_SERIES_IDS['cpi'])
-    if latest_cpi and prev_cpi:
-        signals['CPI'] = 'BUY' if latest_cpi > prev_cpi else 'SELL'
+def analyze_signals(value: str = FRED_SERIES_IDS['s&p500']) -> list:
+    print("analyze_signals key", value)
+    data_origin = get_fred_data(value, 10)
+    print("data_origin", data_origin)
+    if not data_origin:
+        return []
+    new_data = [{"Date": item["date"], "Value": item["value"]} for item in data_origin['observations']]
+    return new_data
+    # print("data", data)
 
-    # --- Add functions for the other 5 indicators here ---
-    # For simplicity, we'll work with the 5 we've implemented.
+    # values = [item["value"] for item in data]
+    # print(values)
 
-    buy_count = list(signals.values()).count('BUY')
-    sell_count = list(signals.values()).count('SELL')
     
-    return signals, buy_count, sell_count
+    # # 1. Inflation (CPI)
+    # latest_cpi, prev_cpi = get_fred_data(FRED_SERIES_IDS['cpi'])
+    # if latest_cpi and prev_cpi:
+    #     signals['CPI'] = 'BUY' if latest_cpi > prev_cpi else 'SELL'
+
+    # buy_count = list(signals.values()).count('BUY')
+    # sell_count = list(signals.values()).count('SELL')
+    
+    # return signals, buy_count, sell_count
 
 
 
 # --- MAIN EXECUTION ---]
 
 def main():
-    print("Running macro factor analysis...")
-    # signals, buy_count, sell_count = analyze_signals()
-    data = get_fred_data(FRED_SERIES_IDS['cpi'], 10)
+    analyze_signals();    
 
-    print(data)
-
-    
-    
     # # Format the message
     # message = "📈 *Macro Signal Report* 📉\n\n"
     # for factor, signal in signals.items():
