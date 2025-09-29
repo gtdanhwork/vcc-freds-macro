@@ -37,7 +37,7 @@ def send_telegram_message(message):
         print(f"Error sending Telegram message: {e}")
         return None
 
-def get_fred_data(series_id, limit=30, realtimeStart='2025-08-01'):
+def get_fred_data(series_id, limit=30, observations_start='2025-08-01', freq='m'):
     """Fetches the last few data points for a given series from FRED."""
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json&limit={limit}"
     try:
@@ -76,34 +76,32 @@ def analyze_signals():
 def main():
     print("Running macro factor analysis...")
     # signals, buy_count, sell_count = analyze_signals()
-    data = get_fred_data(FRED_SERIES_IDS['cpi'], 10)
+    data = get_fred_data(FRED_SERIES_IDS['cpi'], 2)
 
     print(data)
-
     
+    # Format the message
+    message = "📈 *Macro Signal Report* 📉\n\n"
+    for factor, signal in signals.items():
+        emoji = "🟢" if signal == 'BUY' else "🔴"
+        message += f"{emoji} *{factor}:* {signal}\n"
     
-    # # Format the message
-    # message = "📈 *Macro Signal Report* 📉\n\n"
-    # for factor, signal in signals.items():
-    #     emoji = "🟢" if signal == 'BUY' else "🔴"
-    #     message += f"{emoji} *{factor}:* {signal}\n"
+    message += f"\n*Summary:*\n"
+    message += f"🟢 Buy Signals: *{buy_count}*\n"
+    message += f"🔴 Sell Signals: *{sell_count}*\n\n"
     
-    # message += f"\n*Summary:*\n"
-    # message += f"🟢 Buy Signals: *{buy_count}*\n"
-    # message += f"🔴 Sell Signals: *{sell_count}*\n\n"
-    
-    # # --- TRIGGER LOGIC (e.g., 4 out of 5 for this example) ---
-    # if buy_count >= 4:
-    #     message += "🚨 *MAJOR BUY SIGNAL DETECTED* 🚨"
-    #     send_telegram_message(message)
-    # elif sell_count >= 4:
-    #     message += "🚨 *MAJOR SELL SIGNAL DETECTED* 🚨"
-    #     send_telegram_message(message)
-    # else:
-    #     message += "Signal is neutral. No action required."
-    #     print(message)
-    #     # Optional: uncomment below to get a report even on neutral days
-    #     send_telegram_message(message)
+    # --- TRIGGER LOGIC (e.g., 4 out of 5 for this example) ---
+    if buy_count >= 8:
+        message += "🚨 *MAJOR BUY SIGNAL DETECTED* 🚨"
+        send_telegram_message(message)
+    elif sell_count >= 8:
+        message += "🚨 *MAJOR SELL SIGNAL DETECTED* 🚨"
+        send_telegram_message(message)
+    else:
+        message += "Signal is neutral. No action required."
+        print(message)
+        # Optional: uncomment below to get a report even on neutral days
+        send_telegram_message(message)
 
 if __name__ == "__main__":
     main()
