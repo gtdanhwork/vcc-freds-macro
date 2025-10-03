@@ -6,10 +6,10 @@ from datetime import date
 from dotenv import load_dotenv
 from seriesIds import FRED_SERIES_IDS
 
-# Load environment variables from .env file
+# Tải biến môi trường từ tệp .env
 load_dotenv()
 
-# --- CONFIGURATION ---
+# --- CẤU HÌNH ---
 FRED_API_KEY = os.getenv('FRED_API_KEY')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -20,7 +20,7 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 #     'cpi': 'CPIAUCSL',                # Consumer Price Index
 # }
 
-# --- HELPER FUNCTIONS ---
+# --- CHỨC NĂNG HỖ TRỢ TELEGRAM ---
 
 def send_telegram_message(message):
     """Sends a message to your Telegram bot."""
@@ -38,20 +38,7 @@ def send_telegram_message(message):
         print(f"Error sending Telegram message: {e}")
         return None
 
-def get_fred_data(series_id, limit=30, realtimeStart='2024-09-01'):
-    """Fetches the last few data points for a given series from FRED."""
-    url = f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json&limit={limit}"
-    try:
-        response = requests.get(url)
-        data = response.json()
-        if 'observations' in data and len(data['observations']) >= limit:
-            # Get the two most recent values
-            return data
-    except Exception as e:
-        print(f"Could not fetch data for {  series_id}: {e}")
-        return None
-
-# --- SIGNAL ANALYSIS LOGIC ---
+# --- LOGIC PHÂN TÍCH TÍN HIỆU (Giữ lại để tương thích) ---
 
 def analyze_signals(value: str = FRED_SERIES_IDS['s&p500']) -> list:
     print("analyze_signals key", value)
@@ -77,9 +64,80 @@ def analyze_signals(value: str = FRED_SERIES_IDS['s&p500']) -> list:
     
     # return signals, buy_count, sell_count
 
+# --- CHỨC NĂNG LẤY DỮ LIỆU FRED ---
+
+def get_fred_data(series_id, limit=10000): 
+    """
+    Lấy bộ dữ liệu lịch sử lớn nhất có thể cho một chuỗi dữ liệu từ FRED.
+    Loại bỏ các tham số theo dõi phiên bản để tránh lỗi giới hạn 'vintage date'.
+    """
+    
+    # URL được đơn giản hóa bằng cách loại bỏ '&realtime_start=...'
+    url = f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json&limit={limit}&sort_order=asc"
+    
+    try:
+        response = requests.get(url)
+        
+        # 1. Kiểm tra Lỗi API/HTTP (4xx hoặc 5xx)
+        if response.status_code != 200:
+            print(f"--- API ERROR for {series_id} (Status: {response.status_code}) ---")
+            try:
+                error_message = response.json().get('error_message', response.text)
+                print(f"FRED Message: {error_message}")
+            except json.JSONDecodeError:
+                print(f"Raw Response: {response.text}")
+            print("---------------------------------------------------------")
+            return [] 
+
+        data = response.json()
+        
+        # 2. Kiểm tra Lỗi Dữ liệu FRED (ví dụ: Không tìm thấy Chuỗi)
+        if 'error_code' in data:
+            print(f"--- FRED DATA ERROR for {series_id} ---")
+            print(f"Error Message: {data.get('error_message')}")
+            print("----------------------------------------")
+            return []
+            
+        # 3. KIỂM TRA QUAN TRỌNG: Đảm bảo khóa observations tồn tại và không rỗng
+        if 'observations' in data and data['observations']:
+            return data['observations']
+        else:
+            print(f"--- CẢNH BÁO: Chuỗi {series_id} trả về 200 OK nhưng KHÔNG có dữ liệu observations. ---")
+            return []
+            
+    except Exception as e:
+        print(f"Không thể lấy dữ liệu cho {series_id}: {e}")
+        
+    return [] 
+
+# ... rest of monitor.py remains the same
+def fetch_all_fred_data() -> dict:
+    """
+    Hàm được gọi bởi cache Streamlit. Lấy dữ liệu cho TẤT CẢ các chỉ số.
+    """
+    all_series_data = {}
+    print("\n--- Bắt đầu Lấy Dữ liệu FRED hàng loạt ban đầu ---")
+    
+    for friendly_name, series_id in FRED_SERIES_IDS.items(): 
+        print(f"Fetching data for: {friendly_name} ({series_id})")
+
+        # Gọi hàm đã cập nhật mà không có tham số ngày bắt đầu
+        data = get_fred_data(series_id) 
+        
+        # Chuyển đổi cấu trúc dữ liệu và lọc các giá trị bị thiếu ('.')
+        new_data = [
+            {"Date": item["date"], "Value": item["value"]} 
+            for item in data if item["value"] != '.'
+        ]
+        # Lưu trữ dữ liệu bằng ID FRED làm khóa tra cứu
+        all_series_data[series_id] = new_data
+        
+    print("--- FRED Data Initial Fetch Complete ---\n")
+    return all_series_data
 
 
-# --- MAIN EXECUTION ---]
+
+# --- THỰC THI CHÍNH ---
 
 def main():
     analyze_signals();    
