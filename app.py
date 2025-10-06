@@ -8,6 +8,7 @@ from seriesIds import FRED_SERIES_IDS
 
 st.title("Bitcoin Macro Factor Dashboard")
 st.write("This dashboard monitors key macroeconomic indicators to generate a trading signal for Bitcoin.")
+st.set_page_config(layout="wide")
 
 # --- HÀM TẠO CACHE DỮ LIỆU MỚI ---
 # Cache trong 24 giờ. Lần tải đầu tiên sẽ gọi API cho TẤT CẢ các chỉ số.
@@ -60,6 +61,15 @@ start_date = st.sidebar.date_input(
     format="YYYY/MM/DD"
 )
 
+
+show_table = st.sidebar.checkbox("Show Table", value=True)
+show_chart = st.sidebar.checkbox("Show Chart", value=True)
+
+if st.sidebar.button("Refresh ALL Data (Clears Cache)"):
+    # Xóa cache một cách rõ ràng để buộc gọi API mới
+    st.cache_data.clear() 
+    st.rerun()
+
 # --- DATA FILTERING LOGIC (Runs instantly from cached data) ---
 
 # Hàm LỌC dữ liệu từ cache 
@@ -109,23 +119,17 @@ def get_filtered_data(series_id, start_date, limit):
 st.session_state.df = get_filtered_data(selected_fred_id, start_date, limit)
 
 # --- Hiển thị Dữ liệu và Biểu đồ ---
+
 st.header(f"Data for: {selected_display_name} ({selected_fred_id})")
-st.dataframe(st.session_state.df, width='stretch') 
-
-fig = px.line(
-    st.session_state.df, 
-    x="Date", 
-    y="Value", 
-    title=f"{selected_display_name} over Time"
-)
-st.plotly_chart(fig, key="macro_chart", width='stretch')
-
-# --- Nút refresh ---
-col1, col2, col3 = st.columns([1,1,1])
-with col2:
-    if st.button("Refresh ALL Data (Clears Cache)"):
-        # Xóa cache một cách rõ ràng để buộc gọi API mới
-        st.cache_data.clear() 
-        st.rerun()
-
-#
+col1, col2 = st.columns(2)
+with col1:
+    fig = px.line(
+        st.session_state.df, 
+        x="Date", 
+        y="Value", 
+    )
+    if show_chart:
+        st.plotly_chart(fig, key="macro_chart", width='stretch')
+with col2:  
+    if show_table:
+        st.dataframe(st.session_state.df, width='stretch')
