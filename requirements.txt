@@ -1,0 +1,32 @@
+# Bitcoin Macro Dashboard - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core Framework
+streamlit>=1.28.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualization
+plotly>=5.17.0
+
+# API Requests
+requests>=2.31.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Date/Time utilities (usually included with Python)
+python-dateutil>=2.8.2
+
+# Optional: Enhanced data tables (uncomment if needed)
+# streamlit-aggrid>=0.3.4
+
+# Optional: Export to Excel (uncomment if needed)
+# openpyxl>=3.1.0
+
+# Development Dependencies (optional)
+# pytest>=7.4.0
+# black>=23.9.0
+# flake8>=6.1.0
