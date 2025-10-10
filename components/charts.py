@@ -115,7 +115,7 @@ def create_detailed_chart(df, indicator_key, chart_type='Line', show_ma=False):
         showlegend=True
     )
 
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig)
 
 
 def create_comparison_chart(data_dict, selected_indicators):

@@ -63,7 +63,7 @@ def create_metric_card(indicator_key, df):
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)'
     )
-    st.plotly_chart(sparkline_fig, width="stretch", config={'displayModeBar': False}, key=f'spark_{indicator_key}')
+    st.plotly_chart(sparkline_fig, config={'displayModeBar': False}, key=f'spark_{indicator_key}')
 
 
 def create_stats_summary(indicator_key, df):

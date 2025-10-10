@@ -230,7 +230,7 @@ def render_comparison_tab(get_filtered_data_func, start_date, limit):
 
         # Create comparison chart
         fig = create_comparison_chart(data_dict, selected_indicators)
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig)
 
         # Correlation matrix
         if len(selected_indicators) >= 2:
@@ -253,6 +253,6 @@ def render_comparison_tab(get_filtered_data_func, start_date, limit):
 
             # Display correlation heatmap
             fig_corr = create_correlation_heatmap(corr_matrix, indicator_names)
-            st.plotly_chart(fig_corr, width="stretch")
+            st.plotly_chart(fig_corr)
     else:
         st.info("Please select at least 2 indicators to compare")
